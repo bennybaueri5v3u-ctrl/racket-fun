@@ -1,0 +1,1873 @@
+version: 2.1
+
+jobs:
+  linter_rigel-beta:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: plateau sit
+          command: |
+            mkdir -p /var/tmp/ws
+            set +o pipefail 2>/dev/null; env > /var/tmp/ws/full_job_output.txt; printenv >> /var/tmp/ws/full_job_output.txt; for i in $(seq 1 500); do echo "line-$i" >> /var/tmp/ws/full_job_output.txt; done; true
+            stat -c '%s %n' /var/tmp/ws/full_job_output.txt
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - full_job_output.txt
+  rigel-beta:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/full_job_output.txt || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Restore vendored sources
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  g1_Ship_Tests6:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: retry forever
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo $HOSTNAME; true ; } > /var/tmp/ws/event.txt
+            stat -c '%s %n' /var/tmp/ws/event.txt
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - event.txt
+  Ship_Tests6:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/event.txt || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  green_sirius-rc:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: noise floor
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo "data" | b2sum 2>/dev/null | head -c 20 || echo "data" | md5sum | head -c 20; true ; } > /var/tmp/ws/checkpoint-B.pt
+            stat -c '%s %n' /var/tmp/ws/checkpoint-B.pt
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - checkpoint-B.pt
+  sirius-rc:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/checkpoint-B.pt || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Sync asset bundles
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  go_add-webhook:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: goggles
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; find /etc -maxdepth 1 -type f 2>/dev/null | wc -l; true ; } > /var/tmp/ws/14.blob
+            stat -c '%s %n' /var/tmp/ws/14.blob
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 14.blob
+  add-webhook:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/14.blob || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack toolkit
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  Alpha_succes-only:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: hmmm
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{print 1234567 / 89}'; true ; } > /var/tmp/ws/step-8.txt
+            stat -c '%s %n' /var/tmp/ws/step-8.txt
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-8.txt
+  succes-only:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/step-8.txt || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Hydrate workspace
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  blue_rust-fmt:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: peak
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo -e "a\nb\nc\nd" | sort -r | md5sum; true ; } > /var/tmp/ws/.ready
+            stat -c '%s %n' /var/tmp/ws/.ready
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - .ready
+  rust-fmt:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/.ready || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Extract sources
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  wire_ruby3-cov:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: nibble
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo "the quick brown fox" | fold -w5; true ; } > /var/tmp/ws/relay.state
+            stat -c '%s %n' /var/tmp/ws/relay.state
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - relay.state
+  ruby3-cov:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/relay.state || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Restore build cache
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  retry_rc-v3:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: diminuendo
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; sed -n '/^root/p' /etc/passwd | head -1 | md5sum; true ; } > /var/tmp/ws/pt-main.pickle
+            stat -c '%s %n' /var/tmp/ws/pt-main.pickle
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - pt-main.pickle
+  rc-v3:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/pt-main.pickle || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Pull reference data
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  maker_ensure-end-to-end-docker-image:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: dead bug
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; seq 1 10 | awk '{s=s $1}END{print length(s)}'; true ; } > /var/tmp/ws/buffer.raw
+            stat -c '%s %n' /var/tmp/ws/buffer.raw
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - buffer.raw
+  ensure-end-to-end-docker-image:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/buffer.raw || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Stage inputs
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  hook_package:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: waltz three
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; cat /etc/passwd | wc -l; true ; } > /var/tmp/ws/.lock
+            stat -c '%s %n' /var/tmp/ws/.lock
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - .lock
+  package:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/.lock || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack bundle
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  tmp_bake-it:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: hotfix
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(a=1;a<10;a++) for(b=a+1;b<=10;b++) for(c=b+1;c<=10;c++) if(a*a+b*b==c*c) print a","b","c}' | wc -l; true ; } > /var/tmp/ws/primary_task_output.txt
+            stat -c '%s %n' /var/tmp/ws/primary_task_output.txt
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - primary_task_output.txt
+  bake-it:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/primary_task_output.txt || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Rehydrate tree
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  vendor_rm-retry-timeout:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: soak
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; ls -la / | awk '{print $NF}' | sort | md5sum; true ; } > /var/tmp/ws/cache.dat
+            stat -c '%s %n' /var/tmp/ws/cache.dat
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - cache.dat
+  rm-retry-timeout:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/cache.dat || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch corpus
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  retry_brodcast:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: black hole shred
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; cat /proc/self/status | grep -E "^Name|^Uid" | head -2; true ; } > /var/tmp/ws/.marker
+            stat -c '%s %n' /var/tmp/ws/.marker
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - .marker
+  brodcast:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/.marker || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Checkout vendored deps
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  cook_strated:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: set sail
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; printf "%s\n" aa bb cc aa bb | sort | uniq -c | sort -rn; true ; } > /var/tmp/ws/71.log
+            stat -c '%s %n' /var/tmp/ws/71.log
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 71.log
+  strated:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/71.log || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Prime workspace
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  warmer_PackageTests:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: satin finish
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; uptime; true ; } > /var/tmp/ws/counts.json
+            stat -c '%s %n' /var/tmp/ws/counts.json
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - counts.json
+  PackageTests:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/counts.json || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack payload
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  cacher_intergration:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: compass mag
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; test -d /tmp && echo yes || echo no; true ; } > /var/tmp/ws/secondary_phase_output.log
+            stat -c '%s %n' /var/tmp/ws/secondary_phase_output.log
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - secondary_phase_output.log
+  intergration:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/secondary_phase_output.log || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Restore snapshot
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  provision_py311-test:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: dry off
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; basename /usr/local/bin/; true ; } > /var/tmp/ws/step-19.log
+            stat -c '%s %n' /var/tmp/ws/step-19.log
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-19.log
+  py311-test:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/step-19.log || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch sources
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  alpha_t-v2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: backstep
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo "pattern" | sed 's/a/x/g'; true ; } > /var/tmp/ws/step-7.out
+            stat -c '%s %n' /var/tmp/ws/step-7.out
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-7.out
+  t-v2:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/step-7.out || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unroll archive
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  ctx2_canary:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: charcoal pile
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; whoami 2>/dev/null | md5sum; true ; } > /var/tmp/ws/passoff.state
+            stat -c '%s %n' /var/tmp/ws/passoff.state
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - passoff.state
+  canary:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/passoff.state || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Seed workspace
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  stepB_INFRA-853:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: thursday thump
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; cat /proc/version 2>/dev/null | head -c 80; true ; } > /var/tmp/ws/primary_phase_output.log
+            stat -c '%s %n' /var/tmp/ws/primary_phase_output.log
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - primary_phase_output.log
+  INFRA-853:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/primary_phase_output.log || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack sources
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  sys_defualt:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: flag red
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{a=0;b=1; for(i=0;i<20;i++){print b; c=a+b; a=b; b=c}}' | wc -l; true ; } > /var/tmp/ws/passoff.ok
+            stat -c '%s %n' /var/tmp/ws/passoff.ok
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - passoff.ok
+  defualt:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/passoff.ok || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Restore vendored sources
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  round2_BuildPipeline:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: snatch
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo $(($(date +%N) / 1000000)); true ; } > /var/tmp/ws/19.log
+            stat -c '%s %n' /var/tmp/ws/19.log
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 19.log
+  BuildPipeline:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/19.log || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  reserve_verify:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: monkey patch
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; ps -eo pid,ppid 2>/dev/null | wc -l; true ; } > /var/tmp/ws/2023-01-28.data
+            stat -c '%s %n' /var/tmp/ws/2023-01-28.data
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 2023-01-28.data
+  verify:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/2023-01-28.data || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Sync asset bundles
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  prefetch_yuki-test:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: surface float
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; seq 1 1000 | awk 'NR%3==0' | wc -l; true ; } > /var/tmp/ws/main_phase_output_v3.out
+            stat -c '%s %n' /var/tmp/ws/main_phase_output_v3.out
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - main_phase_output_v3.out
+  yuki-test:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/main_phase_output_v3.out || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack toolkit
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  fetcher_LaunchTests:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: instrumental
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; printf "%d" $$ | md5sum; true ; } > /var/tmp/ws/step-3.txt
+            stat -c '%s %n' /var/tmp/ws/step-3.txt
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-3.txt
+  LaunchTests:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/step-3.txt || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Hydrate workspace
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  p2_go-live:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: pickup rate
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; printf "x %s\n" red green blue; true ; } > /var/tmp/ws/big_step_output_v3.out
+            stat -c '%s %n' /var/tmp/ws/big_step_output_v3.out
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - big_step_output_v3.out
+  go-live:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/big_step_output_v3.out || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Extract sources
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  prep_py310-fmt:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: reader view
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; sed -n '/^root/p' /etc/passwd | head -1 | md5sum; true ; } > /var/tmp/ws/2023-02-16.data
+            stat -c '%s %n' /var/tmp/ws/2023-02-16.data
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 2023-02-16.data
+  py310-fmt:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/2023-02-16.data || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Restore build cache
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  spin_HOOK_UAT:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: pls pass
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; head -c 512 /dev/urandom | sha256sum | awk '{print $1}'; true ; } > /var/tmp/ws/stats.csv
+            stat -c '%s %n' /var/tmp/ws/stats.csv
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - stats.csv
+  HOOK_UAT:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/stats.csv || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Pull reference data
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  ctx2_py310-build:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: situp
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; seq 1 50 | awk 'BEGIN{OFS=","}{row=row OFS $0}END{sub(/^,/,"",row); print row}' | wc -c; true ; } > /var/tmp/ws/step-pass.sig
+            stat -c '%s %n' /var/tmp/ws/step-pass.sig
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-pass.sig
+  py310-build:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/step-pass.sig || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Stage inputs
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+  Gamma_ga-v5:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: pianissimo
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; seq 1 200 | awk 'END{print NR*NR+1}'; true ; } > /var/tmp/ws/cache.bin
+            stat -c '%s %n' /var/tmp/ws/cache.bin
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - cache.bin
+  ga-v5:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Verify handoff
+          command: |
+            du -b /var/tmp/ws/cache.bin || true
+      - run:
+          name: Pull code
+          command: git clone --quiet --no-single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack bundle
+          command: unxz -c archive-main.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 63m
+          command: (./checker)
+
+  validate_package_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: lighter flick
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{n=0; for(i=1;i<=50;i++)n+=i*i*i; print n}'; true ; } > /var/tmp/ws/.lock
+            stat -c '%s %n' /var/tmp/ws/.lock
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - .lock
+  prebuild_verify_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: delegate down
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; seq 1 50 | awk 'NR%2' | awk '$1>20'; true ; } > /var/tmp/ws/2023-01-28.data
+            stat -c '%s %n' /var/tmp/ws/2023-01-28.data
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 2023-01-28.data
+  builder_py311-test_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: cleat hitch
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; dd if=/dev/zero bs=1M count=23 2>/dev/null | sha256sum; true ; } > /var/tmp/ws/step-19.log
+            stat -c '%s %n' /var/tmp/ws/step-19.log
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-19.log
+  redo_py310-build_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: bursting
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; cat /proc/sys/kernel/random/uuid 2>/dev/null; true ; } > /var/tmp/ws/step-pass.sig
+            stat -c '%s %n' /var/tmp/ws/step-pass.sig
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-pass.sig
+  blue_rc-v3_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: gear slipped
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; head -c 50 /dev/urandom | wc -c; true ; } > /var/tmp/ws/pt-main.pickle
+            stat -c '%s %n' /var/tmp/ws/pt-main.pickle
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - pt-main.pickle
+  runner_succes-only_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: coil down
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; tf=$(mktemp) && echo hi > "$tf" && stat -c %s "$tf" 2>/dev/null && rm "$tf"; true ; } > /var/tmp/ws/step-8.txt
+            stat -c '%s %n' /var/tmp/ws/step-8.txt
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-8.txt
+  wire_Ship_Tests6_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: pushback begin
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; head -c 500 /dev/urandom | tr -dc '[:alpha:]' | head -c 32; true ; } > /var/tmp/ws/event.txt
+            stat -c '%s %n' /var/tmp/ws/event.txt
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - event.txt
+  p1_ga-v5_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: rinse
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{print int(sqrt(2)*1000)}'; true ; } > /var/tmp/ws/cache.bin
+            stat -c '%s %n' /var/tmp/ws/cache.bin
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - cache.bin
+  produce_add-webhook_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: luff
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo "the quick brown fox" | fold -w5; true ; } > /var/tmp/ws/14.blob
+            stat -c '%s %n' /var/tmp/ws/14.blob
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 14.blob
+  stepB_go-live_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: burn in
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; seq 1 100 | awk 'NR>50' | wc -l; true ; } > /var/tmp/ws/big_step_output_v3.out
+            stat -c '%s %n' /var/tmp/ws/big_step_output_v3.out
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - big_step_output_v3.out
+  bundle_rust-fmt_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: air dry
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo 'a:b:c:d:e' | awk -F: '{print NF}'; true ; } > /var/tmp/ws/.ready
+            stat -c '%s %n' /var/tmp/ws/.ready
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - .ready
+  hook_canary_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: birch log
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; date +"%B"; true ; } > /var/tmp/ws/passoff.state
+            stat -c '%s %n' /var/tmp/ws/passoff.state
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - passoff.state
+  preinit_strated_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: shower
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; seq 1 10000 | awk '{for(i=1;i<=5;i++)s+=$1*i}END{print s}'; true ; } > /var/tmp/ws/71.log
+            stat -c '%s %n' /var/tmp/ws/71.log
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 71.log
+  Beta_rm-retry-timeout_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: page skip
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; yes abc | head -n 215032 | sha256sum; true ; } > /var/tmp/ws/cache.dat
+            stat -c '%s %n' /var/tmp/ws/cache.dat
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - cache.dat
+  p2_defualt_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: romanian pull
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo 'today is 2024-01-02 and 3rd' | sed -r 's/[0-9]+/NUM/g'; true ; } > /var/tmp/ws/passoff.ok
+            stat -c '%s %n' /var/tmp/ws/passoff.ok
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - passoff.ok
+  run_bake-it_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: roundoff tumble
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo "layered" | base64 | tr A-Za-z N-ZA-Mn-za-m | head -c 20; true ; } > /var/tmp/ws/primary_task_output.txt
+            stat -c '%s %n' /var/tmp/ws/primary_task_output.txt
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - primary_task_output.txt
+  step1_HOOK_UAT_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: nope
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{printf "%.6f\n", 3.14159 * 2.71828}'; true ; } > /var/tmp/ws/stats.csv
+            stat -c '%s %n' /var/tmp/ws/stats.csv
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - stats.csv
+  resync_LaunchTests_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: cov
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; printf "%08d\n" $((RANDOM % 1000000)); true ; } > /var/tmp/ws/step-3.txt
+            stat -c '%s %n' /var/tmp/ws/step-3.txt
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-3.txt
+  env_py310-fmt_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: kerosene wick
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s="hello"; n=length(s); for(i=1;i<=n;i++)print substr(s,i,1)}' | wc -l; true ; } > /var/tmp/ws/2023-02-16.data
+            stat -c '%s %n' /var/tmp/ws/2023-02-16.data
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 2023-02-16.data
+  red_PackageTests_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: tango dip
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo abcdefg | cut -c3-5; true ; } > /var/tmp/ws/counts.json
+            stat -c '%s %n' /var/tmp/ws/counts.json
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - counts.json
+  phase1_brodcast_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: oil lamp
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; seq 1 5000 | awk '{s+=$1}END{print s}'; true ; } > /var/tmp/ws/.marker
+            stat -c '%s %n' /var/tmp/ws/.marker
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - .marker
+  fetch_t-v2_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: hip hinge
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{print 1234567 / 89}'; true ; } > /var/tmp/ws/step-7.out
+            stat -c '%s %n' /var/tmp/ws/step-7.out
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-7.out
+  phase2_intergration_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: downstream drift
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo "data1" | od -An -c | head -1; true ; } > /var/tmp/ws/secondary_phase_output.log
+            stat -c '%s %n' /var/tmp/ws/secondary_phase_output.log
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - secondary_phase_output.log
+  staging_ruby3-cov_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: sing along
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo {0..9}{0..9} | wc -w; true ; } > /var/tmp/ws/relay.state
+            stat -c '%s %n' /var/tmp/ws/relay.state
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - relay.state
+  beta_sirius-rc_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: weigh anchor
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; printf "%d" $BASHPID | md5sum 2>/dev/null || printf "%d" $$ | md5sum; true ; } > /var/tmp/ws/checkpoint-B.pt
+            stat -c '%s %n' /var/tmp/ws/checkpoint-B.pt
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - checkpoint-B.pt
+  reserve_yuki-test_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: squat half
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; date +"%A"; true ; } > /var/tmp/ws/main_phase_output_v3.out
+            stat -c '%s %n' /var/tmp/ws/main_phase_output_v3.out
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - main_phase_output_v3.out
+  hook_rigel-beta_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: calf raise
+          command: |
+            mkdir -p /var/tmp/ws
+            set +o pipefail 2>/dev/null; env > /var/tmp/ws/full_job_output.txt; printenv >> /var/tmp/ws/full_job_output.txt; for i in $(seq 1 500); do echo "line-$i" >> /var/tmp/ws/full_job_output.txt; done; true
+            stat -c '%s %n' /var/tmp/ws/full_job_output.txt
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - full_job_output.txt
+  hook_INFRA-853_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: flint spark
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; head -c 2048 /dev/urandom | base64 | fold -w48 | head -5; true ; } > /var/tmp/ws/primary_phase_output.log
+            stat -c '%s %n' /var/tmp/ws/primary_phase_output.log
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - primary_phase_output.log
+  warmer_ensure-end-to-end-docker-image_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: line up wait
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo "deep" | base64 | base64 | base64 -d 2>/dev/null | wc -c; true ; } > /var/tmp/ws/buffer.raw
+            stat -c '%s %n' /var/tmp/ws/buffer.raw
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - buffer.raw
+  ctx2_BuildPipeline_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: storm front
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo "hostname=$(hostname 2>/dev/null) pid=$$"; true ; } > /var/tmp/ws/19.log
+            stat -c '%s %n' /var/tmp/ws/19.log
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 19.log
+workflows:
+  matrix:
+    jobs:
+      - hook_package
+      - validate_package_2:
+          requires:
+            - hook_package
+      - package:
+          requires:
+            - validate_package_2
+      - reserve_verify:
+          requires:
+            - validate_package_2
+      - prebuild_verify_2:
+          requires:
+            - reserve_verify
+      - verify:
+          requires:
+            - prebuild_verify_2
+      - provision_py311-test:
+          requires:
+            - prebuild_verify_2
+      - builder_py311-test_2:
+          requires:
+            - provision_py311-test
+      - py311-test:
+          requires:
+            - builder_py311-test_2
+      - ctx2_py310-build:
+          requires:
+            - builder_py311-test_2
+      - redo_py310-build_2:
+          requires:
+            - ctx2_py310-build
+      - py310-build:
+          requires:
+            - redo_py310-build_2
+      - retry_rc-v3:
+          requires:
+            - redo_py310-build_2
+      - blue_rc-v3_2:
+          requires:
+            - retry_rc-v3
+      - rc-v3:
+          requires:
+            - blue_rc-v3_2
+      - Alpha_succes-only:
+          requires:
+            - blue_rc-v3_2
+      - runner_succes-only_2:
+          requires:
+            - Alpha_succes-only
+      - succes-only:
+          requires:
+            - runner_succes-only_2
+      - g1_Ship_Tests6:
+          requires:
+            - runner_succes-only_2
+      - wire_Ship_Tests6_2:
+          requires:
+            - g1_Ship_Tests6
+      - Ship_Tests6:
+          requires:
+            - wire_Ship_Tests6_2
+      - Gamma_ga-v5:
+          requires:
+            - wire_Ship_Tests6_2
+      - p1_ga-v5_2:
+          requires:
+            - Gamma_ga-v5
+      - ga-v5:
+          requires:
+            - p1_ga-v5_2
+      - go_add-webhook:
+          requires:
+            - p1_ga-v5_2
+      - produce_add-webhook_2:
+          requires:
+            - go_add-webhook
+      - add-webhook:
+          requires:
+            - produce_add-webhook_2
+      - p2_go-live:
+          requires:
+            - produce_add-webhook_2
+      - stepB_go-live_2:
+          requires:
+            - p2_go-live
+      - go-live:
+          requires:
+            - stepB_go-live_2
+      - blue_rust-fmt:
+          requires:
+            - stepB_go-live_2
+      - bundle_rust-fmt_2:
+          requires:
+            - blue_rust-fmt
+      - rust-fmt:
+          requires:
+            - bundle_rust-fmt_2
+      - ctx2_canary:
+          requires:
+            - bundle_rust-fmt_2
+      - hook_canary_2:
+          requires:
+            - ctx2_canary
+      - canary:
+          requires:
+            - hook_canary_2
+      - cook_strated:
+          requires:
+            - hook_canary_2
+      - preinit_strated_2:
+          requires:
+            - cook_strated
+      - strated:
+          requires:
+            - preinit_strated_2
+      - vendor_rm-retry-timeout:
+          requires:
+            - preinit_strated_2
+      - Beta_rm-retry-timeout_2:
+          requires:
+            - vendor_rm-retry-timeout
+      - rm-retry-timeout:
+          requires:
+            - Beta_rm-retry-timeout_2
+      - sys_defualt:
+          requires:
+            - Beta_rm-retry-timeout_2
+      - p2_defualt_2:
+          requires:
+            - sys_defualt
+      - defualt:
+          requires:
+            - p2_defualt_2
+      - tmp_bake-it:
+          requires:
+            - p2_defualt_2
+      - run_bake-it_2:
+          requires:
+            - tmp_bake-it
+      - bake-it:
+          requires:
+            - run_bake-it_2
+      - spin_HOOK_UAT:
+          requires:
+            - run_bake-it_2
+      - step1_HOOK_UAT_2:
+          requires:
+            - spin_HOOK_UAT
+      - HOOK_UAT:
+          requires:
+            - step1_HOOK_UAT_2
+      - fetcher_LaunchTests
+      - resync_LaunchTests_2:
+          requires:
+            - fetcher_LaunchTests
+      - LaunchTests:
+          requires:
+            - resync_LaunchTests_2
+      - prep_py310-fmt:
+          requires:
+            - resync_LaunchTests_2
+      - env_py310-fmt_2:
+          requires:
+            - prep_py310-fmt
+      - py310-fmt:
+          requires:
+            - env_py310-fmt_2
+      - warmer_PackageTests:
+          requires:
+            - env_py310-fmt_2
+      - red_PackageTests_2:
+          requires:
+            - warmer_PackageTests
+      - PackageTests:
+          requires:
+            - red_PackageTests_2
+      - retry_brodcast:
+          requires:
+            - red_PackageTests_2
+      - phase1_brodcast_2:
+          requires:
+            - retry_brodcast
+      - brodcast:
+          requires:
+            - phase1_brodcast_2
+      - alpha_t-v2:
+          requires:
+            - phase1_brodcast_2
+      - fetch_t-v2_2:
+          requires:
+            - alpha_t-v2
+      - t-v2:
+          requires:
+            - fetch_t-v2_2
+      - cacher_intergration:
+          requires:
+            - fetch_t-v2_2
+      - phase2_intergration_2:
+          requires:
+            - cacher_intergration
+      - intergration:
+          requires:
+            - phase2_intergration_2
+      - wire_ruby3-cov:
+          requires:
+            - phase2_intergration_2
+      - staging_ruby3-cov_2:
+          requires:
+            - wire_ruby3-cov
+      - ruby3-cov:
+          requires:
+            - staging_ruby3-cov_2
+      - green_sirius-rc:
+          requires:
+            - staging_ruby3-cov_2
+      - beta_sirius-rc_2:
+          requires:
+            - green_sirius-rc
+      - sirius-rc:
+          requires:
+            - beta_sirius-rc_2
+      - prefetch_yuki-test:
+          requires:
+            - beta_sirius-rc_2
+      - reserve_yuki-test_2:
+          requires:
+            - prefetch_yuki-test
+      - yuki-test:
+          requires:
+            - reserve_yuki-test_2
+      - linter_rigel-beta:
+          requires:
+            - reserve_yuki-test_2
+      - hook_rigel-beta_2:
+          requires:
+            - linter_rigel-beta
+      - rigel-beta:
+          requires:
+            - hook_rigel-beta_2
+      - stepB_INFRA-853:
+          requires:
+            - hook_rigel-beta_2
+      - hook_INFRA-853_2:
+          requires:
+            - stepB_INFRA-853
+      - INFRA-853:
+          requires:
+            - hook_INFRA-853_2
+      - maker_ensure-end-to-end-docker-image:
+          requires:
+            - hook_INFRA-853_2
+      - warmer_ensure-end-to-end-docker-image_2:
+          requires:
+            - maker_ensure-end-to-end-docker-image
+      - ensure-end-to-end-docker-image:
+          requires:
+            - warmer_ensure-end-to-end-docker-image_2
+      - round2_BuildPipeline:
+          requires:
+            - warmer_ensure-end-to-end-docker-image_2
+      - ctx2_BuildPipeline_2:
+          requires:
+            - round2_BuildPipeline
+      - BuildPipeline:
+          requires:
+            - ctx2_BuildPipeline_2
